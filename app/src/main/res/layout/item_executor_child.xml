@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:padding="15dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        tools:text="2018-09-29"
+        android:id="@+id/tv_child_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <ImageButton
+        android:background="@null"
+        android:src="@drawable/icon_uncheck"
+        android:layout_alignParentRight="true"
+        android:id="@+id/ib_child_check"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <android.support.v7.widget.GridLayout
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_marginTop="10dp"
+        android:layout_below="@id/tv_child_date"
+        android:id="@+id/gl_child_time"
+        app:useDefaultMargins="true"
+        app:columnCount="4"
+        app:rowCount="6"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+    </android.support.v7.widget.GridLayout>
+
+</RelativeLayout>
