@@ -17,11 +17,11 @@ public class Data {
     public void initData(){
         List<ChildBean> childBeans;
         List<TimeBean> timeBeans;
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             childBeans = new ArrayList<>();
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < 2; j++) {
                 timeBeans = new ArrayList<>();
-                for (int k = 0; k < 6 ; k++) {
+                for (int k = 0; k < 4 ; k++) {
                     timeBeans.add(new TimeBean((19 + k + ": 00"), false));
                 }
                 childBeans.add(new ChildBean("2018-09-2" + (6+j), timeBeans));

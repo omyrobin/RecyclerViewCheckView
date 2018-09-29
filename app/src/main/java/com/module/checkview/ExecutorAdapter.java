@@ -36,9 +36,9 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
     //统计父布局选中状态
     private Map<Integer,Integer> groupCheckMap = new HashMap<>();
     //统计当前父布局下所有子布局选中状态
-    private Map<Integer,Map<Integer,Integer>> childCheckMap = new HashMap<>();
+    private Map<Integer,Map<String,Integer>> childCheckMap = new HashMap<>();
     //统计当前父布局下某一个子布局的选中状态
-    private Map<Integer,Integer> gridLayoutCheckMap = new HashMap<>();
+    private Map<String,Integer> gridLayoutCheckMap = new HashMap<>();
     //父布局ImageButton Check View集合;
     private Map<Integer, ImageButton> groupViewMap = new HashMap<>();
 
@@ -140,12 +140,13 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
         }
     }
 
-    public void onBindGridLayoutItem(View v, int groupPosition, int chilsPosition, int count,ImageButton button) {
+    public void onBindGridLayoutItem(View v, int groupPosition, int childPosition, int count,ImageButton button) {
+        Log.i("TAG", " groupPosition : " + groupPosition + "   childPosition ： "+ childPosition);
         //变更time的选择状态，并修改对应数据
-        ChildBean childBean = groupBeans.get(groupPosition).getItems().get(chilsPosition);
+        ChildBean childBean = groupBeans.get(groupPosition).getItems().get(childPosition);
         List<TimeBean> timeBeans = childBean.getTimes();
         boolean isSelected = timeBeans.get(count).isSelected();
-        groupBeans.get(groupPosition).getItems().get(chilsPosition).getTimes().get(count).setSelected(!isSelected);
+        groupBeans.get(groupPosition).getItems().get(childPosition).getTimes().get(count).setSelected(!isSelected);
         v.setSelected(!isSelected);
 
         //子布局GridLayout Item选中状态计数
@@ -157,28 +158,31 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
         }
         //根据子布局GridLayout Item选中计数变更子布局ImageButton状态
         if(selectCount == timeBeans.size()){
-            onBindChildCheckBoxStatus(Constants.CHECK, groupPosition, chilsPosition, button);
-            gridLayoutCheckMap.put(chilsPosition, Constants.CHECK);
+            onBindChildCheckBoxStatus(Constants.CHECK, groupPosition, childPosition, button);
+            gridLayoutCheckMap.put(groupPosition+"-"+childPosition, Constants.CHECK);
             childCheckMap.put(groupPosition,gridLayoutCheckMap);
         }else if(selectCount != 0){
-            onBindChildCheckBoxStatus(Constants.HALFCHECK, groupPosition, chilsPosition,button);
-            gridLayoutCheckMap.put(chilsPosition, Constants.HALFCHECK);
+            onBindChildCheckBoxStatus(Constants.HALFCHECK, groupPosition, childPosition,button);
+            gridLayoutCheckMap.put(groupPosition+"-"+childPosition, Constants.HALFCHECK);
             childCheckMap.put(groupPosition,gridLayoutCheckMap);
         }else{
-            onBindChildCheckBoxStatus(Constants.UNCHECK, groupPosition, chilsPosition,button);
-            gridLayoutCheckMap.put(chilsPosition, Constants.UNCHECK);
+            onBindChildCheckBoxStatus(Constants.UNCHECK, groupPosition, childPosition,button);
+            gridLayoutCheckMap.put(groupPosition+"-"+childPosition, Constants.UNCHECK);
             childCheckMap.put(groupPosition,gridLayoutCheckMap);
         }
 
         //子布局选中状态计数
         int allselectCount = 0;
-        for (Map.Entry<Integer, Map<Integer,Integer>> entry : childCheckMap.entrySet()) {
-            for (Map.Entry<Integer, Integer> item : entry.getValue().entrySet()){
-                if(item.getValue() == Constants.CHECK){
-                    allselectCount ++;
-                }
+        Map<String, Integer> entryMap = childCheckMap.get(groupPosition);
+        Log.i("TAG", " entryMap " + entryMap.size());
+        for (Map.Entry<String, Integer> item : entryMap.entrySet()){
+            String key = item.getKey().split("-")[0];
+            if(Integer.parseInt(key) == groupPosition && item.getValue() == Constants.CHECK){
+                allselectCount ++;
             }
         }
+
+        Log.i("TAG", " allselectCount : " + allselectCount);
 
         //根据子布局计数变更父布局ImageButton状态
         ImageButton groupButton = groupViewMap.get(groupPosition);
