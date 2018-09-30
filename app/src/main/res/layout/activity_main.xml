@@ -14,6 +14,25 @@
         android:layout_height="?actionBarSize">
     </android.support.v7.widget.Toolbar>
 
+    <RelativeLayout
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/ib_all_check"
+            android:background="@null"
+            android:src="@drawable/icon_uncheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_centerVertical="true"
+            android:text="全选"
+            android:layout_alignParentRight="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_executor"
         android:layout_width="match_parent"
