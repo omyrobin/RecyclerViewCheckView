@@ -31,23 +31,23 @@ import java.util.Map;
 
 public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapter.ExecutorGVH, ExecutorAdapter.ExecutorCVH> {
 
+    private IallSelectStatusListener listener;
     private Context context;
     private List<GroupBean> groupBeans;
-    private ImageButton ib_all_check;
     //统计父布局选中状态----执行人
     private Map<Integer,Integer> groupCheckMap = new HashMap<>();
     //统计父布局下所有Item选中状态----当前GroupPosition所有日期
     private Map<Integer,Map<String ,Integer>> group_childCheckMap = new HashMap<>();
-    //统计Item选中状态
+    //统计父布局下某一个Item选中状态  ----某一个日期
     Map<String ,Integer> childCheckMap = new HashMap<>();
     //父布局ImageButton Check View集合;
     private Map<Integer, ImageButton> groupViewMap = new HashMap<>();
 
-    public ExecutorAdapter(Context context, List<GroupBean> groupBeans, ImageButton ib_all_check) {
+    public ExecutorAdapter(Context context, List<GroupBean> groupBeans, IallSelectStatusListener listener) {
         super(groupBeans);
         this.context = context;
         this.groupBeans = groupBeans;
-        this.ib_all_check = ib_all_check;
+        this.listener = listener;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
     }
 
     @Override
-    public void onBindGroupViewHolder(ExecutorGVH holder, final int groupPosition, ExpandableGroup group) {
+    public void onBindGroupViewHolder(ExecutorGVH holder, final int groupPosition, final ExpandableGroup group) {
         holder.tv_executor_name.setText(groupBeans.get(groupPosition).getName());
         onBindGroupCheckBoxStatus(groupBeans.get(groupPosition).getStatus(),groupPosition,holder.ib_exexutor_check);
         //由于ChildViewHolder中无法获取Group中的ImageButton， 存入集合中取用
@@ -76,6 +76,10 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
                 int status = groupBeans.get(groupPosition).getStatus();
                 status = status == Constants.CHECK ? Constants.UNCHECK : Constants.CHECK;
                 onBindGroupCheckBoxStatus(status, groupPosition, (ImageButton) v);
+                groupCheckMap.put(groupPosition,status);
+
+                //全选计数
+                allCount();
 
                 int childItemCount = groupBeans.get(groupPosition).getItems().size();
                 int gridLayoutItemCount = groupBeans.get(groupPosition).getItems().get(0).getTimes().size();
@@ -166,7 +170,7 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
     }
 
     private void onBindAllCheckBoxStatus(int status){
-        setImageButtonStatus(status,ib_all_check);
+        listener.setAllSelectStatus(status);
     }
 
     //绑定父布局选择状态
@@ -182,7 +186,7 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
     }
 
     //设置ImageButton对应状态的icon
-    private void setImageButtonStatus(int status, ImageButton button){
+    public void setImageButtonStatus(int status, ImageButton button){
         switch (status){
             case Constants.CHECK:
                 button.setImageResource(R.drawable.icon_check);
@@ -260,18 +264,46 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
                 groupCheckMap.put(groupPosition,Constants.UNCHECK);
             }
         }
+        allCount();
     }
 
+    //全选计数
+    public void allCount(){
+        int allSelectCount = 0;
+        int allHalfSelectCount = 0;
+        for (Map.Entry<Integer, Integer> all : groupCheckMap.entrySet() ) {
+            if(all.getValue() == Constants.CHECK){
+                allSelectCount++;
+            }else if(all.getValue() == Constants.HALFCHECK){
+                allHalfSelectCount++;
+            }
+        }
 
-//        int allSelectCount = 0;
-//        for (Map.Entry<Integer, Integer> all : groupCheckMap.entrySet() ) {
-//            if(all.getValue() == Constants.CHECK){
-//                allSelectCount++;
-//            }
-//        }
-//        if(allSelectCount == groupBeans.size()){
-//            onBindAllCheckBoxStatus(Constants.CHECK);
-//        }else if()
+        if(allSelectCount == groupBeans.size()){
+            onBindAllCheckBoxStatus(Constants.CHECK);
+        }else if(allSelectCount !=0 || allHalfSelectCount!=0){
+            onBindAllCheckBoxStatus(Constants.HALFCHECK);
+        }else{
+            onBindAllCheckBoxStatus(Constants.UNCHECK);
+        }
+    }
+
+    public void putMap(int status) {
+        for (int i = 0; i < groupBeans.size(); i++) {
+            groupBeans.get(i).setStatus(status);
+            groupCheckMap.put(i,status);
+            for (int j = 0; j < groupBeans.get(i).getItems().size(); j++) {
+                groupBeans.get(i).getItems().get(j).setStatus(status);
+                childCheckMap.put(i+"-"+j, status);
+                group_childCheckMap.put(i, childCheckMap);
+
+                for (int k = 0; k < groupBeans.get(i).getItems().get(j).getTimes().size(); k++) {
+                    groupBeans.get(i).getItems().get(j).getTimes().get(k).setSelected(status == Constants.CHECK);
+                }
+            }
+        }
+    }
+
 
     //父布局ViewHolder
     class ExecutorGVH extends GroupViewHolder {
@@ -320,4 +352,9 @@ public class ExecutorAdapter extends ExpandableRecyclerViewAdapter<ExecutorAdapt
             gl_child_time = itemView.findViewById(R.id.gl_child_time);
         }
     }
+
+    interface IallSelectStatusListener{
+        void setAllSelectStatus(int status);
+    }
+
 }
